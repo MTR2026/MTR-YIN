@@ -1,3 +1,4 @@
+
 // netlify/functions/backfill-tickets.js
 // MTR YIN — Función de un solo uso para registrar y enviar entradas
 // de compras Stripe que no se procesaron por el webhook (antes de
@@ -5,31 +6,31 @@
 //
 // Uso: GET /.netlify/functions/backfill-tickets?secret=TU_ADMIN_SECRET
 // Una vez ejecutada, puede eliminarse este archivo.
-
+ 
 const nodemailer = require('nodemailer');
 const QRCode = require('qrcode');
 const crypto = require('crypto');
 const PDFDocument = require('pdfkit');
-
+ 
 const TICKET_LABELS = {
   general:      'Acceso General',
   primera_fila: 'Acceso Primera Fila',
   vip_cena:     'Acceso VIP + Cena',
 };
-
+ 
 const TICKET_PVP = {
   general:      35,
   primera_fila: 50,
   vip_cena:     75,
 };
-
+ 
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST || 'smtp.gmail.com',
   port: parseInt(process.env.EMAIL_PORT || '587', 10),
   secure: false,
   auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
 });
-
+ 
 // Lista de compras pendientes de procesar (extraídas de Stripe)
 const PENDING_SALES = [
   { chargeId: 'ch_3ThwDZKkIU2phT3t1CtO0D8c', name: 'Alina Alexandra Pintoiu', email: 'alina.pintoiu@gmail.com', ticketType: 'general', qty: 1 },
@@ -40,7 +41,7 @@ const PENDING_SALES = [
   { chargeId: 'ch_3TXN57KkIU2phT3t10QwZYdZ', name: 'Alondra Rendon',           email: 'abril_bor@icloud.com', ticketType: 'primera_fila', qty: 2 },
   { chargeId: 'ch_3TWxOCKkIU2phT3t0gZ4G8Q7', name: 'Angel Curiel',             email: 'angelcuriel@gmail.com', ticketType: 'primera_fila', qty: 1 },
 ];
-
+ 
 function generateTicketCode(seed, index) {
   const hash = crypto
     .createHash('sha256')
@@ -48,14 +49,14 @@ function generateTicketCode(seed, index) {
     .digest('hex').toUpperCase();
   return `MTRYIN-${hash.slice(0,4)}-${hash.slice(4,8)}-${hash.slice(8,12)}`;
 }
-
+ 
 async function generateQRBuffer(code) {
   return await QRCode.toBuffer(code, {
     errorCorrectionLevel: 'H', width: 200, margin: 1,
     color: { dark: '#000000', light: '#f0ede8' },
   });
 }
-
+ 
 async function generatePDF(ticket, label, pvp, name, quantity) {
   return new Promise(async (resolve, reject) => {
     const doc = new PDFDocument({ size: 'A4', margin: 0, info: { Title: 'MTR YIN — Entrada', Author: 'Muay Thai Revolution' } });
@@ -63,53 +64,53 @@ async function generatePDF(ticket, label, pvp, name, quantity) {
     doc.on('data', chunk => buffers.push(chunk));
     doc.on('end', () => resolve(Buffer.concat(buffers)));
     doc.on('error', reject);
-
+ 
     const W = 595.28, H = 841.89, pad = 48;
-
+ 
     doc.rect(0, 0, W, H).fill('#0a0a0a');
-
+ 
     doc.fontSize(8).fillColor('#b0aca5').font('Helvetica')
       .text('MUAY THAI REVOLUTION', pad, pad, { align: 'center', width: W - pad*2, characterSpacing: 3 });
-
+ 
     doc.fontSize(56).fillColor('#f0ede8').font('Helvetica-Bold')
       .text('MTR', pad, pad + 20, { align: 'center', width: W - pad*2 });
-
+ 
     const sepY = pad + 90;
     doc.rect(pad, sepY, W - pad*2, 4).fill('#f0ede8');
-
+ 
     doc.fontSize(56).fillColor('#f0ede8').font('Helvetica-Bold')
       .text('YIN', pad, sepY + 8, { align: 'center', width: W - pad*2 });
-
+ 
     doc.fontSize(9).fillColor('#b0aca5').font('Helvetica')
       .text('21 JUNIO 2026 · SALA GROOVE · PINTO, MADRID', pad, sepY + 72, { align: 'center', width: W - pad*2, characterSpacing: 1 });
-
+ 
     const boxY = sepY + 100;
     const boxH = 180;
     doc.rect(pad, boxY, W - pad*2, boxH).stroke('#444444');
-
+ 
     doc.fontSize(8).fillColor('#b0aca5').font('Helvetica')
       .text(`ENTRADA ${ticket.number} DE ${quantity}`, pad + 20, boxY + 18, { characterSpacing: 2 });
-
+ 
     doc.fontSize(22).fillColor('#f0ede8').font('Helvetica-Bold')
       .text(label, pad + 20, boxY + 34);
-
+ 
     doc.fontSize(11).fillColor('#b0aca5').font('Helvetica')
       .text('PVP: ', pad + 20, boxY + 68, { continued: true })
       .fontSize(18).fillColor('#f0ede8').font('Helvetica-Bold')
       .text(`${pvp}€`);
-
+ 
     doc.fontSize(10).fillColor('#b0aca5').font('Helvetica')
       .text(`#${String(ticket.number).padStart(4,'0')}`, pad + 20, boxY + 96);
-
+ 
     if (name) {
       doc.fontSize(10).fillColor('#b0aca5').font('Helvetica')
         .text(name, pad + 20, boxY + 116);
     }
-
+ 
     const qrBuf = await generateQRBuffer(ticket.code);
     const qrSize = 140;
     doc.image(qrBuf, W - pad - qrSize - 10, boxY + (boxH - qrSize) / 2, { width: qrSize, height: qrSize });
-
+ 
     const tableY = boxY + boxH + 20;
     const rows = [
       ['Evento', 'MTR YIN'],
@@ -117,23 +118,23 @@ async function generatePDF(ticket, label, pvp, name, quantity) {
       ['Lugar', 'Sala Groove, Pinto (Madrid)'],
       ['Acceso', label],
     ];
-
+ 
     doc.rect(pad, tableY - 6, W - pad*2, 1).fill('#2a2a2a');
-
+ 
     rows.forEach((row, i) => {
       const rowY = tableY + i * 24;
       doc.fontSize(10).fillColor('#b0aca5').font('Helvetica').text(row[0], pad, rowY);
       doc.fontSize(10).fillColor('#f0ede8').font('Helvetica-Bold').text(row[1], W/2, rowY, { width: W/2 - pad, align: 'right' });
       doc.rect(pad, rowY + 16, W - pad*2, 1).fill('#1a1a1a');
     });
-
+ 
     const codeY = tableY + rows.length * 24 + 12;
     doc.fontSize(10).fillColor('#555555').font('Helvetica')
       .text(ticket.code, pad, codeY, { align: 'center', width: W - pad*2, characterSpacing: 1 });
-
+ 
     const infoY = codeY + 22;
     doc.rect(pad, infoY, W - pad*2, 1).fill('#2a2a2a');
-
+ 
     const instrucciones = [
       { bold: 'Como llegar:', text: 'Sala Groove, Ctra. de Getafe, 32, Pinto, Madrid. A 20 min de Madrid en coche o cercanias (C-3 hasta Pinto).' },
       ...(label.includes('VIP') ? [{ bold: 'Acceso VIP:', text: 'Entrada exclusiva por acceso VIP con acceso preferente. Incluye cena.' }] : []),
@@ -142,7 +143,7 @@ async function generatePDF(ticket, label, pvp, name, quantity) {
       { bold: 'Sin devoluciones:', text: 'Las entradas no son reembolsables bajo ningun concepto.' },
       { bold: 'Acceso:', text: 'Presenta este QR en la entrada. Uso unico y no transferible.' },
     ];
-
+ 
     let lineY = infoY + 10;
     instrucciones.forEach(item => {
       doc.fontSize(8.5).fillColor('#f0ede8').font('Helvetica-Bold')
@@ -151,14 +152,14 @@ async function generatePDF(ticket, label, pvp, name, quantity) {
         .text(item.text, { width: W - pad*2 });
       lineY += 20;
     });
-
+ 
     doc.fontSize(8).fillColor('#333333').font('Helvetica')
       .text('© 2026 MTR YIN — Muay Thai Revolution · contacto@muaythairevolution.es', pad, H - 28, { align: 'center', width: W - pad*2 });
-
+ 
     doc.end();
   });
 }
-
+ 
 async function registerTicket(code, ticketType, ticketName, buyerName, buyerEmail, entryNumber, totalEntries, pvp) {
   try {
     await fetch(`${process.env.URL}/.netlify/functions/validate-ticket`, {
@@ -171,7 +172,7 @@ async function registerTicket(code, ticketType, ticketName, buyerName, buyerEmai
     });
   } catch (e) { console.warn('No se pudo registrar en BD:', e.message); }
 }
-
+ 
 function buildEmailHtml(name, label, pvp, quantity) {
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
   <body style="background:#0a0a0a;color:#f0ede8;font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:40px 20px;">
@@ -217,23 +218,23 @@ function buildEmailHtml(name, label, pvp, quantity) {
     <p style="font-size:11px;color:rgba(176,172,165,0.3);margin-top:20px;text-align:center;">© 2026 MTR YIN — Muay Thai Revolution</p>
   </body></html>`;
 }
-
+ 
 exports.handler = async (event) => {
   const headers = { 'Content-Type': 'application/json' };
-
+ 
   const secret = event.queryStringParameters?.secret;
   if (!process.env.ADMIN_SECRET || secret !== process.env.ADMIN_SECRET) {
     return { statusCode: 401, headers, body: JSON.stringify({ error: 'No autorizado' }) };
   }
-
+ 
   const results = [];
-
+ 
   for (const sale of PENDING_SALES) {
     const label = TICKET_LABELS[sale.ticketType];
     const pvp = TICKET_PVP[sale.ticketType];
     const tickets = [];
     const pdfAttachments = [];
-
+ 
     try {
       for (let i = 0; i < sale.qty; i++) {
         const code = generateTicketCode(sale.chargeId, i);
@@ -246,7 +247,7 @@ exports.handler = async (event) => {
           contentType: 'application/pdf',
         });
       }
-
+ 
       await transporter.sendMail({
         from: `"MTR YIN Entradas" <${process.env.EMAIL_FROM || process.env.EMAIL_USER}>`,
         to: sale.email,
@@ -254,7 +255,7 @@ exports.handler = async (event) => {
         html: buildEmailHtml(sale.name, label, pvp, sale.qty),
         attachments: pdfAttachments,
       });
-
+ 
       await transporter.sendMail({
         from: `"MTR YIN Entradas" <${process.env.EMAIL_FROM || process.env.EMAIL_USER}>`,
         to: 'entradas@muaythairevolution.com',
@@ -271,12 +272,12 @@ exports.handler = async (event) => {
           ${tickets.map(t => `&nbsp;&nbsp;${t.code}`).join('<br>')}
         </p>`,
       }).catch(e => console.warn('Error email control:', e));
-
+ 
       results.push({ email: sale.email, name: sale.name, ok: true, codes: tickets.map(t => t.code) });
     } catch (err) {
       results.push({ email: sale.email, name: sale.name, ok: false, error: err.message });
     }
   }
-
+ 
   return { statusCode: 200, headers, body: JSON.stringify({ done: true, results }) };
 };
