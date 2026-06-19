@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MTR YIN — Muay Thai Revolution · 21 Junio 2026 · Madrid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://js.stripe.com/v3/"></script>
+<style>
+  :root {
+    --black: #0a0a0a;
+    --white: #f0ede8;
+    --off-white: #e8e5e0;
+    --gray: #b0aca5;
+    --dark-gray: #1a1a18;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--black); color: var(--white); font-family: 'Barlow', sans-serif; overflow-x: hidden; }
+
+  body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events:none; z-index:1000; opacity:0.4; }
+
+  nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; justify-content:space-between; align-items:center; padding:16px 40px; border-bottom:1px solid rgba(240,237,232,0.08); background:rgba(10,10,10,0.88); backdrop-filter:blur(12px); }
+  .nav-logo img { height:54px; filter:invert(1); }
+  nav a.cta-btn { font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; text-decoration:none; color:var(--black); background:var(--white); padding:10px 24px; border:none; cursor:pointer; transition:opacity 0.2s; }
+  nav a.cta-btn:hover { opacity:0.85; }
+
+  .hero { min-height:100vh; position:relative; display:flex; flex-direction:column; justify-content:flex-end; padding:0 40px 80px; overflow:hidden; }
+  .hero-bg { position:absolute; inset:0; background: radial-gradient(ellipse 60% 60% at 30% 50%, rgba(240,237,232,0.04) 0%, transparent 70%), var(--black); }
+  .hero-yin { position:absolute; right:-120px; top:50%; transform:translateY(-50%); width:700px; height:700px; opacity:0.06; }
+  .hero-date-bar { position:absolute; top:90px; left:40px; right:40px; display:flex; align-items:center; gap:16px; }
+  .hero-date-pill { font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:600; letter-spacing:0.3em; text-transform:uppercase; color:var(--black); background:var(--white); padding:6px 16px; }
+  .hero-date-line { flex:1; height:1px; background:rgba(240,237,232,0.15); }
+  .hero-content { position:relative; z-index:2; max-width:900px; }
+  .hero-eyebrow { font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:600; letter-spacing:0.4em; text-transform:uppercase; color:var(--gray); margin-bottom:16px; }
+  .hero-logo { display:block; width:clamp(320px, 55vw, 700px); margin-bottom:16px; filter:invert(1); opacity:0.95; }
+  .hero-subtitle { font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:600; letter-spacing:0.35em; text-transform:uppercase; color:var(--gray); margin-bottom:40px; }
+  .hero-meta { display:flex; align-items:center; gap:32px; flex-wrap:wrap; }
+  .hero-meta-item { display:flex; flex-direction:column; gap:4px; }
+  .hero-meta-label { font-size:10px; font-weight:600; letter-spacing:0.3em; text-transform:uppercase; color:var(--gray); }
+  .hero-meta-value { font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:700; color:var(--white); }
+  .hero-meta-divider { width:1px; height:40px; background:rgba(240,237,232,0.2); }
+  .hero-cta { display:inline-block; font-family:'Barlow Condensed',sans-serif; font-size:14px; font-weight:800; letter-spacing:0.25em; text-transform:uppercase; text-decoration:none; color:var(--black); background:var(--white); padding:16px 40px; border:none; cursor:pointer; transition:all 0.2s; margin-top:32px; }
+  .hero-cta:hover { background:var(--off-white); }
+
+  section { position:relative; }
+  .section-label { font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:600; letter-spacing:0.4em; text-transform:uppercase; color:var(--gray); margin-bottom:16px; display:flex; align-items:center; gap:16px; }
+  .section-label::before { content:''; display:block; width:24px; height:1px; background:var(--gray); }
+
+  .manifesto { padding:120px 40px; border-top:1px solid rgba(240,237,232,0.08); display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center; }
+  .manifesto-left h2 { font-family:'Barlow Condensed',sans-serif; font-size:clamp(40px,6vw,72px); font-weight:900; line-height:0.92; text-transform:uppercase; color:var(--white); margin-bottom:32px; }
+  .manifesto-left h2 em { font-style:normal; color:var(--gray); }
+  .manifesto-right p { font-size:16px; font-weight:300; line-height:1.8; color:rgba(240,237,232,0.7); margin-bottom:20px; }
+  .manifesto-right p strong { color:var(--white); font-weight:500; }
+
+  .pillars { padding:80px 40px 120px; border-top:1px solid rgba(240,237,232,0.08); display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:rgba(240,237,232,0.08); }
+  .pillar { background:var(--black); padding:48px 40px; }
+  .pillar-number { font-family:'Barlow Condensed',sans-serif; font-size:64px; font-weight:900; color:rgba(240,237,232,0.06); line-height:1; margin-bottom:24px; }
+  .pillar h3 { font-family:'Barlow Condensed',sans-serif; font-size:22px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--white); margin-bottom:12px; }
+  .pillar p { font-size:14px; font-weight:300; line-height:1.7; color:rgba(240,237,232,0.55); }
+
+  .countries-section { padding:80px 40px; border-top:1px solid rgba(240,237,232,0.08); display:flex; align-items:center; gap:64px; overflow:hidden; flex-wrap:wrap; }
+  .countries-title { font-family:'Barlow Condensed',sans-serif; font-size:14px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:var(--gray); white-space:nowrap; min-width:160px; }
+  .countries-list { display:flex; gap:32px; flex-wrap:wrap; align-items:center; }
+  .country-tag { display:flex; align-items:center; gap:10px; cursor:default; }
+  .country-flag { font-size:28px; line-height:1; }
+  .country-name { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:rgba(240,237,232,0.7); transition:color 0.2s; }
+  .country-tag:hover .country-name { color:var(--white); }
+
+  .tickets-section { padding:120px 40px; border-top:1px solid rgba(240,237,232,0.08); }
+  .tickets-header { margin-bottom:64px; }
+  .tickets-header h2 { font-family:'Barlow Condensed',sans-serif; font-size:clamp(48px,7vw,88px); font-weight:900; line-height:0.9; text-transform:uppercase; color:var(--white); }
+
+  /* ── GRID 2 COLUMNAS (sin VIP) ── */
+  .tickets-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1px; background:rgba(240,237,232,0.08); margin-bottom:32px; }
+
+  .ticket-card { background:var(--dark-gray); padding:48px 40px; display:flex; flex-direction:column; gap:24px; position:relative; overflow:hidden; transition:background 0.3s; }
+  .ticket-card:hover { background:#222220; }
+  .ticket-card.featured { background:var(--white); }
+  .ticket-card.featured:hover { background:var(--off-white); }
+  .ticket-badge { display:inline-block; font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:0.3em; text-transform:uppercase; padding:5px 12px; border:1px solid rgba(240,237,232,0.2); color:var(--gray); width:fit-content; }
+  .ticket-card.featured .ticket-badge { border-color:rgba(10,10,10,0.2); color:rgba(10,10,10,0.6); }
+  .ticket-name { font-family:'Barlow Condensed',sans-serif; font-size:32px; font-weight:900; text-transform:uppercase; letter-spacing:0.03em; color:var(--white); line-height:1; }
+  .ticket-card.featured .ticket-name { color:var(--black); }
+  .ticket-price { display:flex; align-items:baseline; gap:4px; }
+  .ticket-price .amount { font-family:'Barlow Condensed',sans-serif; font-size:64px; font-weight:900; line-height:1; color:var(--white); }
+  .ticket-card.featured .ticket-price .amount { color:var(--black); }
+  .ticket-price .currency { font-family:'Barlow Condensed',sans-serif; font-size:24px; font-weight:600; color:var(--gray); }
+  .ticket-card.featured .ticket-price .currency { color:rgba(10,10,10,0.5); }
+  .ticket-divider { height:1px; background:rgba(240,237,232,0.1); }
+  .ticket-card.featured .ticket-divider { background:rgba(10,10,10,0.1); }
+  .ticket-perks { list-style:none; display:flex; flex-direction:column; gap:10px; flex:1; }
+  .ticket-perks li { font-size:13px; font-weight:300; color:rgba(240,237,232,0.6); display:flex; align-items:center; gap:10px; }
+  .ticket-card.featured .ticket-perks li { color:rgba(10,10,10,0.65); }
+  .ticket-perks li::before { content:''; display:block; width:6px; height:6px; border-radius:50%; background:rgba(240,237,232,0.3); flex-shrink:0; }
+  .ticket-card.featured .ticket-perks li::before { background:rgba(10,10,10,0.3); }
+  .ticket-btn { display:block; width:100%; font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; text-align:center; padding:16px; border:1px solid rgba(240,237,232,0.25); background:transparent; color:var(--white); cursor:pointer; transition:all 0.2s; margin-top:auto; }
+  .ticket-btn:hover { background:rgba(240,237,232,0.08); border-color:rgba(240,237,232,0.5); }
+  .ticket-btn:disabled { opacity:0.45; cursor:not-allowed; }
+  .ticket-card.featured .ticket-btn { background:var(--black); border-color:var(--black); color:var(--white); }
+  .ticket-card.featured .ticket-btn:hover:not(:disabled) { background:#1a1a18; }
+  .ticket-stock { font-size:11px; text-align:center; margin-top:6px; color:rgba(10,10,10,0.45); }
+  .tickets-note { font-size:12px; font-weight:300; color:var(--gray); text-align:center; padding-top:24px; border-top:1px solid rgba(240,237,232,0.06); }
+
+  .modal-overlay { display:none; position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.85); align-items:center; justify-content:center; padding:20px; }
+  .modal-overlay.active { display:flex; }
+  .modal { background:var(--dark-gray); border:1px solid rgba(240,237,232,0.12); padding:48px; max-width:480px; width:100%; position:relative; }
+  .modal-close { position:absolute; top:16px; right:20px; background:none; border:none; color:var(--gray); font-size:24px; cursor:pointer; line-height:1; transition:color 0.2s; }
+  .modal-close:hover { color:var(--white); }
+  .modal h3 { font-family:'Barlow Condensed',sans-serif; font-size:28px; font-weight:900; text-transform:uppercase; color:var(--white); margin-bottom:8px; }
+  .modal-price-display { font-family:'Barlow Condensed',sans-serif; font-size:48px; font-weight:900; color:var(--white); line-height:1; margin-bottom:32px; }
+  .modal-price-display span { font-size:20px; color:var(--gray); }
+  .form-group { margin-bottom:16px; }
+  .form-group label { display:block; font-size:11px; font-weight:600; letter-spacing:0.2em; text-transform:uppercase; color:var(--gray); margin-bottom:8px; }
+  .form-group input, .form-group select { width:100%; background:rgba(240,237,232,0.05); border:1px solid rgba(240,237,232,0.15); color:var(--white); font-family:'Barlow',sans-serif; font-size:15px; padding:12px 16px; outline:none; transition:border-color 0.2s; -webkit-appearance:none; }
+  .form-group input::placeholder { color:rgba(240,237,232,0.25); }
+  .form-group input:focus, .form-group select:focus { border-color:rgba(240,237,232,0.4); }
+  .form-group select { cursor:pointer; }
+  .form-group select option { background:#1a1a18; color:var(--white); }
+  .qty-row { display:flex; gap:12px; align-items:flex-end; }
+  .qty-row .form-group { flex:1; }
+  #card-element-container { background:rgba(240,237,232,0.05); border:1px solid rgba(240,237,232,0.15); padding:14px 16px; margin-bottom:16px; transition:border-color 0.2s; }
+  #card-element-container.focused { border-color:rgba(240,237,232,0.4); }
+  .pay-btn { width:100%; font-family:'Barlow Condensed',sans-serif; font-size:15px; font-weight:800; letter-spacing:0.25em; text-transform:uppercase; background:var(--white); color:var(--black); border:none; padding:18px; cursor:pointer; transition:opacity 0.2s; margin-top:8px; }
+  .pay-btn:hover { opacity:0.88; }
+  .pay-btn:disabled { opacity:0.4; cursor:not-allowed; }
+  .modal-secure { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:16px; font-size:11px; color:var(--gray); font-weight:300; }
+  #payment-message { margin-top:12px; font-size:13px; text-align:center; min-height:20px; }
+  #payment-message.error { color:#e74c3c; }
+  #payment-message.success { color:#2ecc71; }
+
+  footer { padding:48px 40px; border-top:1px solid rgba(240,237,232,0.08); display:flex; justify-content:space-between; align-items:center; }
+  .footer-logo img { height:48px; filter:invert(1); }
+  footer p { font-size:12px; font-weight:300; color:var(--gray); }
+
+  .reveal { opacity:0; transform:translateY(30px); transition:opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity:1; transform:translateY(0); }
+
+  @media (max-width:900px) {
+    nav { padding:12px 20px; }
+    nav .nav-logo img { height:44px; }
+    .hero { padding:0 20px 60px; }
+    .hero-date-bar { left:20px; right:20px; }
+    .hero-logo { width:clamp(220px, 80vw, 420px); }
+    .manifesto { grid-template-columns:1fr; gap:40px; padding:80px 20px; }
+    .pillars { grid-template-columns:1fr; padding:0 20px 80px; }
+    .pillar { padding:36px 20px; }
+    .tickets-section { padding:80px 20px; }
+    .tickets-grid { grid-template-columns:1fr; }
+    .ticket-card { padding:36px 24px; }
+    .countries-section { padding:60px 20px; flex-direction:column; gap:24px; }
+    footer { flex-direction:column; gap:16px; text-align:center; padding:32px 20px; }
+    .modal { padding:32px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAmcAAAKICAYAAAA1oF1GAAEAAElEQVR4nOyde..." alt="MTR YIN — Muay Thai Revolution">
+  </div>
+  <a href="#entradas" class="cta-btn">Comprar entradas</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <svg class="hero-yin" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="100" cy="100" r="99" fill="white"/>
+    <path d="M100,1 A99,99 0 0,1 100,199 A49.5,49.5 0 0,1 100,100 A49.5,49.5 0 0,0 100,1 Z" fill="black"/>
+    <circle cx="100" cy="50.5" r="24.75" fill="black"/>
+    <circle cx="100" cy="149.5" r="24.75" fill="white"/>
+    <circle cx="100" cy="50.5" r="8" fill="white"/>
+    <circle cx="100" cy="149.5" r="8" fill="black"/>
+  </svg>
+  <div class="hero-date-bar">
+    <span class="hero-date-pill">21 Jun 2026</span>
+    <div class="hero-date-line"></div>
+    <span style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.3em;text-transform:uppercase;color:rgba(240,237,232,0.3);">Madrid</span>
+  </div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Muay Thai Revolution presenta</p>
+    <img class="hero-logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAmcAAAKICAYAAAA1oF1GAAEAAElEQVR4nOyde..." alt="MTR YIN">
+    <p class="hero-subtitle">Rompiendo las normas</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><span class="hero-meta-label">Fecha</span><span class="hero-meta-value">21 Junio 2026</span></div>
+      <div class="hero-meta-divider"></div>
+      <div class="hero-meta-item"><span class="hero-meta-label">Lugar</span><span class="hero-meta-value">Sala Groove · Pinto</span></div>
+      <div class="hero-meta-divider"></div>
+      <div class="hero-meta-item"><span class="hero-meta-label">Modalidad</span><span class="hero-meta-value">Muay Thai Femenino</span></div>
+      <div class="hero-meta-divider"></div>
+      <div class="hero-meta-item"><span class="hero-meta-label">Nivel</span><span class="hero-meta-value">Profesional Europeo</span></div>
+    </div>
+    <a href="#entradas" class="hero-cta">Reservar entrada ahora</a>
+  </div>
+</section>
+
+<!-- MANIFESTO -->
+<section class="manifesto reveal">
+  <div class="manifesto-left">
+    <div class="section-label">El evento</div>
+    <h2>Un hito<br><em>sin</em><br>precedentes</h2>
+  </div>
+  <div class="manifesto-right">
+    <p><strong>MTR YIN es la primera velada en Madrid con un cartel principal compuesto íntegramente por mujeres.</strong> Y el primer evento a nivel nacional donde todas las peleas principales son profesionales y de nivel europeo.</p>
+    <p>No se trata solo de competir. Es construir una plataforma sostenible para un talento que ha crecido en silencio pero que ahora merece el foco que siempre debió tener.</p>
+    <p>Las deportistas que suben a este ring no solo destacan en el tatami — entre ellas encontramos médicas, ingenieras, investigadoras y educadoras. Eso es MTR YIN: <strong>fuerza, disciplina y ruptura de normas.</strong></p>
+  </div>
+</section>
+
+<!-- CÓMO LLEGAR -->
+<div id="como-llegar" style="padding:80px 40px;border-top:1px solid rgba(240,237,232,0.08);display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start;">
+  <div>
+    <p style="font-size:10px;font-weight:600;letter-spacing:0.4em;text-transform:uppercase;color:rgba(240,237,232,0.4);margin-bottom:16px;">Localización</p>
+    <h2 style="font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:900;line-height:0.9;margin-bottom:24px;">Sala Groove<br>Pinto, Madrid</h2>
+    <p style="font-size:14px;color:rgba(240,237,232,0.6);line-height:1.7;margin-bottom:28px;">Ctra. de Getafe, 32 · 28320 Pinto, Madrid</p>
+    <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:32px;">
+      <div style="display:flex;gap:16px;align-items:flex-start;">
+        <span style="font-size:10px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:rgba(240,237,232,0.4);min-width:70px;padding-top:2px;">Tren</span>
+        <span style="font-size:14px;color:rgba(240,237,232,0.8);line-height:1.5;">Cercanías C-3 hasta Pinto · 20 min desde Atocha</span>
+      </div>
+      <div style="display:flex;gap:16px;align-items:flex-start;">
+        <span style="font-size:10px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:rgba(240,237,232,0.4);min-width:70px;padding-top:2px;">Coche</span>
+        <span style="font-size:14px;color:rgba(240,237,232,0.8);line-height:1.5;">Autovía A-4, salida Pinto · Aparcamiento gratuito</span>
+      </div>
+      <div style="display:flex;gap:16px;align-items:flex-start;">
+        <span style="font-size:10px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:rgba(240,237,232,0.4);min-width:70px;padding-top:2px;">Puertas</span>
+        <span style="font-size:14px;color:rgba(240,237,232,0.8);line-height:1.5;">30 minutos antes · Entrada puntual</span>
+      </div>
+    </div>
+    <a href="https://www.google.com/maps/place/Sala+Groove/@40.2407951,-3.6912879,17z" target="_blank" style="display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:rgba(240,237,232,0.9);border:1px solid rgba(240,237,232,0.3);padding:12px 24px;text-decoration:none;">Ver en Google Maps →</a>
+  </div>
+  <div>
+    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3042.1!2d-3.6887129!3d40.240791!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd421f65edb8a2b7%3A0x383ef16d021e63d1!2sSala%20Groove!5e0!3m2!1ses!2ses!4v1"
+      width="100%" height="380"
+      style="border:1px solid rgba(240,237,232,0.15);filter:grayscale(80%) invert(90%) contrast(85%);display:block;"
+      allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+    </iframe>
+  </div>
+</div>
+
+<!-- PILLARS -->
+<div class="pillars">
+  <div class="pillar reveal">
+    <div class="pillar-number">01</div>
+    <h3>Solo profesional</h3>
+    <p>Todas las peleas del cartel principal son de nivel profesional, alineadas con los circuitos europeos más exigentes.</p>
+  </div>
+  <div class="pillar reveal" style="transition-delay:0.15s">
+    <div class="pillar-number">02</div>
+    <h3>Élite europea</h3>
+    <p>Competidoras de Dinamarca, Italia, Inglaterra, Francia, Malta y España. La crème del Muay Thai femenino europeo, en Madrid.</p>
+  </div>
+  <div class="pillar reveal" style="transition-delay:0.3s">
+    <div class="pillar-number">03</div>
+    <h3>Más que deporte</h3>
+    <p>Perfiles que rompen el molde dentro y fuera del ring. Mujeres que compiten, curan, investigan y educan.</p>
+  </div>
+</div>
+
+<!-- COUNTRIES -->
+<section class="countries-section">
+  <p class="countries-title">Países participantes</p>
+  <div class="countries-list">
+    <div class="country-tag"><span class="country-flag">🇪🇸</span><span class="country-name">España</span></div>
+    <div class="country-tag"><span class="country-flag">🇩🇰</span><span class="country-name">Dinamarca</span></div>
+    <div class="country-tag"><span class="country-flag">🇮🇹</span><span class="country-name">Italia</span></div>
+    <div class="country-tag"><span class="country-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span><span class="country-name">Inglaterra</span></div>
+    <div class="country-tag"><span class="country-flag">🇫🇷</span><span class="country-name">Francia</span></div>
+    <div class="country-tag"><span class="country-flag">🇲🇹</span><span class="country-name">Malta</span></div>
+  </div>
+</section>
+
+<!-- ══ TICKETS — 2 columnas, sin VIP ══ -->
+<section class="tickets-section" id="entradas">
+  <div class="tickets-header reveal">
+    <div class="section-label">Entradas</div>
+    <h2>Elige<br>tu lugar</h2>
+  </div>
+  <div class="tickets-grid reveal">
+
+    <!-- GENERAL -->
+    <div class="ticket-card">
+      <span class="ticket-badge">Entrada General</span>
+      <p class="ticket-name">General</p>
+      <div class="ticket-price"><span class="currency">€</span><span class="amount">35</span></div>
+      <div class="ticket-divider"></div>
+      <ul class="ticket-perks">
+        <li>Acceso al recinto completo</li>
+        <li>Visualización de todos los combates</li>
+        <li>Zonas de barra y hostelería</li>
+        <li>Programa oficial del evento</li>
+      </ul>
+      <button class="ticket-btn" onclick="openModal('General', 35, 'general')">Comprar — 35€</button>
+    </div>
+
+    <!-- PRIMERA FILA — stock limitado -->
+    <div class="ticket-card featured">
+      <span class="ticket-badge">Más popular</span>
+      <p class="ticket-name">Primera Fila</p>
+      <div class="ticket-price"><span class="currency">€</span><span class="amount">50</span></div>
+      <div class="ticket-divider"></div>
+      <ul class="ticket-perks">
+        <li>Asiento en primera fila al ring</li>
+        <li>Vista privilegiada de cada combate</li>
+        <li>Acceso preferente al recinto</li>
+        <li>Programa oficial del evento</li>
+        <li>Zona reservada exclusiva</li>
+      </ul>
+      <button class="ticket-btn" id="btn-primera-fila" onclick="openModal('Primera Fila', 50, 'primera_fila')">Comprar — 50€</button>
+      <p class="ticket-stock" id="stock-primera-fila">Quedan <strong id="stock-num">18</strong> entradas</p>
+    </div>
+
+  </div>
+  <p class="tickets-note">Pago 100% seguro mediante Stripe · Los precios incluyen IVA · Las entradas se envían por email tras la compra</p>
+</section>
+
+<!-- MODAL CHECKOUT -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <p style="font-size:11px;font-weight:600;letter-spacing:0.3em;text-transform:uppercase;color:var(--gray);margin-bottom:8px;">MTR YIN · 21 Jun 2026 · Madrid</p>
+    <h3 id="modal-title">Primera Fila</h3>
+    <div class="modal-price-display" id="modal-price"><span>€</span>50</div>
+    <div class="form-group">
+      <label>Nombre completo</label>
+      <input type="text" id="buyer-name" placeholder="María García López">
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="buyer-email" placeholder="maria@ejemplo.com">
+    </div>
+    <div class="qty-row">
+      <div class="form-group">
+        <label>Cantidad</label>
+        <select id="ticket-qty" onchange="updateTotal()">
+          <option value="1">1 entrada</option>
+          <option value="2">2 entradas</option>
+          <option value="3">3 entradas</option>
+          <option value="4">4 entradas</option>
+          <option value="5">5 entradas</option>
+        </select>
+      </div>
+      <div class="form-group" style="flex:1;display:flex;align-items:flex-end;padding-bottom:1px">
+        <p style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:var(--white);line-height:1">Total: <span id="total-display">50€</span></p>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Datos de tarjeta</label>
+      <div id="card-element-container"><div id="card-element"></div></div>
+    </div>
+    <div class="form-group">
+      <label>Código promocional (opcional)</label>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="promo-code" placeholder="MTRYIN10" style="text-transform:uppercase;flex:1;">
+        <button onclick="applyPromo()" style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;background:transparent;border:1px solid rgba(240,237,232,0.25);color:var(--white);padding:0 16px;cursor:pointer;white-space:nowrap;transition:all 0.2s;" onmouseover="this.style.background='rgba(240,237,232,0.08)'" onmouseout="this.style.background='transparent'">Aplicar</button>
+      </div>
+      <p id="promo-msg" style="font-size:12px;margin-top:6px;min-height:16px;"></p>
+    </div>
+    <div id="payment-message"></div>
+    <button class="pay-btn" id="pay-btn" onclick="handlePayment()">Pagar con Stripe</button>
+    <div class="modal-secure">
+      <svg width="12" height="14" viewBox="0 0 12 14" fill="none"><path d="M6 0L0 2.5V7C0 10.55 2.56 13.87 6 14C9.44 13.87 12 10.55 12 7V2.5L6 0Z" fill="currentColor" opacity="0.5"/></svg>
+      Pago seguro cifrado SSL · Powered by Stripe
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAmcAAAKICAYAAAA1oF1GAAEAAElEQVR4nOyde..." alt="MTR YIN">
+  </div>
+  <p>Rompiendo las Normas · Madrid · 21 Junio 2026</p>
+  <p style="font-size:11px;color:rgba(176,172,165,0.5);">© 2026 MTR YIN. Todos los derechos reservados.</p>
+</footer>
+
+<script>
+  // ─── CONFIGURACIÓN STOCK ───
+  const PRIMERA_FILA_TOTAL = 40;
+  const PRIMERA_FILA_VENDIDAS = 22;
+  const PRIMERA_FILA_RESTANTES = PRIMERA_FILA_TOTAL - PRIMERA_FILA_VENDIDAS; // 18
+
+  // Actualizar UI de stock al cargar
+  (function initStock() {
+    const stockEl = document.getElementById('stock-num');
+    const btn = document.getElementById('btn-primera-fila');
+    if (PRIMERA_FILA_RESTANTES <= 0) {
+      btn.disabled = true;
+      btn.textContent = 'Agotado';
+      if (stockEl) stockEl.parentElement.textContent = 'Entradas agotadas';
+    } else {
+      if (stockEl) stockEl.textContent = PRIMERA_FILA_RESTANTES;
+    }
+  })();
+
+  // ─── STRIPE ───
+  const STRIPE_PUBLIC_KEY = 'pk_live_51KOIFKKkIU2phT3tEK3AuaKAMdSh7pO9nG0sCaNTZLqa9nCOvGKooqkwMgZnjnTWaXWqg6VDJxAjOrVhSdErkRxi00M0DXsJHD';
+
+  let stripe, cardElement;
+  let currentTicket = { name:'', price:0, type:'' };
+
+  function initStripe() {
+    try {
+      stripe = Stripe(STRIPE_PUBLIC_KEY);
+      const elements = stripe.elements({ appearance:{ theme:'night', variables:{ colorPrimary:'#f0ede8', colorBackground:'rgba(240,237,232,0.05)', colorText:'#f0ede8', colorDanger:'#e74c3c', fontFamily:'Barlow, sans-serif', borderRadius:'0px' } } });
+      cardElement = elements.create('card', { style:{ base:{ color:'#f0ede8', fontFamily:'Barlow, sans-serif', fontSize:'15px', '::placeholder':{ color:'rgba(240,237,232,0.3)' } }, invalid:{ color:'#e74c3c' } } });
+      cardElement.mount('#card-element');
+      cardElement.on('focus', () => document.getElementById('card-element-container').classList.add('focused'));
+      cardElement.on('blur', () => document.getElementById('card-element-container').classList.remove('focused'));
+    } catch(e) { console.warn('Stripe: reemplaza la clave pública.'); }
+  }
+
+  function openModal(name, price, type) {
+    // ── Bloqueo de stock para Primera Fila ──
+    if (type === 'primera_fila' && PRIMERA_FILA_RESTANTES <= 0) {
+      alert('Lo sentimos, las entradas de Primera Fila están agotadas.');
+      return;
+    }
+
+    currentTicket = { name, price, type };
+    document.getElementById('modal-title').textContent = name;
+    document.getElementById('modal-price').innerHTML = '<span>€</span>' + price;
+    document.getElementById('ticket-qty').value = '1';
+    document.getElementById('total-display').textContent = price + '€';
+    document.getElementById('payment-message').textContent = '';
+    document.getElementById('payment-message').className = '';
+    document.getElementById('promo-code').value = '';
+    document.getElementById('promo-msg').textContent = '';
+    activeDiscount = 0;
+    loadPromoCodes();
+
+    // Limitar cantidad disponible para Primera Fila
+    const qtySelect = document.getElementById('ticket-qty');
+    qtySelect.innerHTML = '';
+    const maxQty = type === 'primera_fila' ? Math.min(5, PRIMERA_FILA_RESTANTES) : 5;
+    for (let i = 1; i <= maxQty; i++) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = i + (i === 1 ? ' entrada' : ' entradas');
+      qtySelect.appendChild(opt);
+    }
+
+    document.getElementById('modal-overlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+    if (!stripe) initStripe();
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  function closeModalOutside(e) { if (e.target === document.getElementById('modal-overlay')) closeModal(); }
+
+  function updateTotal() {
+    const qty = parseInt(document.getElementById('ticket-qty').value);
+    const discounted = Math.round(currentTicket.price * (100 - activeDiscount) / 100);
+    document.getElementById('total-display').textContent = (qty * discounted) + '€';
+  }
+
+  // ─── CÓDIGOS PROMO ───
+  let PROMO_CODES = {};
+  let activeDiscount = 0;
+
+  async function loadPromoCodes() {
+    try {
+      const res = await fetch('/.netlify/functions/manage-discounts');
+      const data = await res.json();
+      PROMO_CODES = data.discounts || {};
+    } catch(e) {
+      PROMO_CODES = { 'PRENSA2026': 100, 'PATROCINADOR': 50, 'MTRYIN10': 10 };
+    }
+  }
+
+  function applyPromo() {
+    const code = document.getElementById('promo-code').value.trim().toUpperCase();
+    const msg = document.getElementById('promo-msg');
+    const qty = parseInt(document.getElementById('ticket-qty').value);
+
+    if (!code) { msg.style.color='#e74c3c'; msg.textContent='Introduce un código.'; return; }
+
+    if (PROMO_CODES[code] !== undefined) {
+      activeDiscount = PROMO_CODES[code];
+      const base = currentTicket.price * qty;
+      const discount = Math.round(base * activeDiscount / 100);
+      const final = base - discount;
+      msg.style.color='#2ecc71';
+      if (activeDiscount === 100) {
+        msg.textContent = '✓ Código aplicado — Acceso gratuito';
+        document.getElementById('total-display').textContent = '0€';
+      } else {
+        msg.textContent = `✓ Código aplicado — ${activeDiscount}% de descuento`;
+        document.getElementById('total-display').textContent = final + '€';
+      }
+    } else {
+      activeDiscount = 0;
+      msg.style.color='#e74c3c';
+      msg.textContent = 'Código no válido.';
+    }
+  }
+
+  async function handlePayment() {
+    const name = document.getElementById('buyer-name').value.trim();
+    const email = document.getElementById('buyer-email').value.trim();
+    const qty = parseInt(document.getElementById('ticket-qty').value);
+    const btn = document.getElementById('pay-btn');
+    if (!name) { showMsg('Por favor, introduce tu nombre completo.','error'); return; }
+    if (!email || !email.includes('@')) { showMsg('Por favor, introduce un email válido.','error'); return; }
+    if (!stripe || !cardElement) { showMsg('⚠️ Stripe no está configurado.','error'); return; }
+    btn.disabled = true; btn.textContent = 'Procesando...'; showMsg('','');
+    try {
+      const res = await fetch('/.netlify/functions/create-payment-intent', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ ticket: currentTicket.type, qty, email, name, discount: activeDiscount, promoCode: document.getElementById('promo-code').value.trim().toUpperCase() })
+      });
+      const data = await res.json();
+      if (!res.ok) { showMsg('Error: ' + (data.error || 'Error desconocido'), 'error'); btn.disabled = false; btn.textContent = 'Pagar con Stripe'; return; }
+      if (data.free) {
+        try {
+          await fetch('/.netlify/functions/generate-free-ticket', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-admin-secret': 'PROMO_AUTO' },
+            body: JSON.stringify({
+              email, name,
+              ticketType: currentTicket.type,
+              qty,
+              school: '',
+              promoCode: document.getElementById('promo-code').value.trim().toUpperCase(),
+            }),
+          });
+        } catch(e) { console.warn('Error generando PDF gratuito:', e); }
+        showMsg('✓ Entrada gratuita aplicada. Recibirás tu entrada por email en breve.', 'success');
+        btn.textContent = '¡Completado!';
+        return;
+      }
+      const { clientSecret } = data;
+      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: { card: cardElement, billing_details: { name, email } }
+      });
+      if (error) { showMsg(error.message,'error'); }
+      else if (paymentIntent.status === 'succeeded') { showMsg('✓ ¡Pago realizado! Recibirás tu entrada en ' + email,'success'); btn.textContent='¡Compra completada!'; return; }
+    } catch(err) { showMsg('Error de conexión. Inténtalo de nuevo.','error'); }
+    btn.disabled = false; btn.textContent = 'Pagar con Stripe';
+  }
+
+  function showMsg(text, type) { const el = document.getElementById('payment-message'); el.textContent = text; el.className = type; }
+
+  const observer = new IntersectionObserver((entries) => { entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); }); }, { threshold:0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
+</script>
+</body>
+</html>
