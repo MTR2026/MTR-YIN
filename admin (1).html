@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>MTR YIN — Panel Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a0a0a; color:#f0ede8; font-family:'Barlow',sans-serif; min-height:100vh; }
+
+  .login-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:32px 20px; }
+  .logo-block { text-align:center; margin-bottom:40px; }
+  .logo-block .eyebrow { font-size:11px; letter-spacing:0.4em; text-transform:uppercase; color:#b0aca5; margin-bottom:10px; }
+  .logo-block h1 { font-family:'Barlow Condensed',sans-serif; font-size:52px; font-weight:900; line-height:0.9; }
+  .logo-block .sep { width:100%; height:4px; background:#f0ede8; margin:5px 0; }
+  .logo-block .sub { font-size:11px; letter-spacing:0.3em; text-transform:uppercase; color:#b0aca5; margin-top:8px; }
+  .login-input { width:100%; max-width:320px; background:rgba(240,237,232,0.05); border:1px solid rgba(240,237,232,0.2); color:#f0ede8; font-family:'Barlow',sans-serif; font-size:16px; padding:14px 16px; outline:none; margin-bottom:12px; text-align:center; }
+  .login-input::placeholder { color:rgba(240,237,232,0.3); }
+  .login-btn { width:100%; max-width:320px; font-family:'Barlow Condensed',sans-serif; font-size:14px; font-weight:800; letter-spacing:0.25em; text-transform:uppercase; background:#f0ede8; color:#0a0a0a; border:none; padding:16px; cursor:pointer; }
+  .login-btn:hover { opacity:0.88; }
+  #login-error { color:#e74c3c; font-size:13px; margin-top:8px; min-height:20px; }
+
+  .app { display:none; flex-direction:column; min-height:100vh; }
+
+  .topbar { background:#111; border-bottom:1px solid rgba(240,237,232,0.08); padding:0 24px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; height:52px; }
+  .topbar-logo { font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:900; }
+  .readonly-badge { font-size:10px; font-weight:600; letter-spacing:0.2em; text-transform:uppercase; color:#f39c12; border:1px solid rgba(243,156,18,0.4); padding:3px 10px; margin-left:12px; display:none; }
+  .topbar-right { display:flex; align-items:center; gap:8px; }
+  .btn-xs { font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; background:transparent; border:1px solid rgba(240,237,232,0.2); color:#b0aca5; padding:6px 14px; cursor:pointer; transition:all 0.2s; }
+  .btn-xs:hover { color:#f0ede8; border-color:rgba(240,237,232,0.4); }
+
+  .nav-tabs { background:#0f0f0f; border-bottom:1px solid rgba(240,237,232,0.08); display:flex; overflow-x:auto; }
+  .nav-tab { font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:#b0aca5; padding:14px 24px; cursor:pointer; border-bottom:2px solid transparent; transition:all 0.2s; white-space:nowrap; background:none; border-top:none; border-left:none; border-right:none; }
+  .nav-tab:hover { color:#f0ede8; }
+  .nav-tab.active { color:#f0ede8; border-bottom-color:#f0ede8; }
+  .nav-tab.hidden { display:none; }
+
+  .section { display:none; flex:1; flex-direction:column; }
+  .section.active { display:flex; }
+
+  .escuelas-wrap { max-width:560px; margin:0 auto; padding:32px 20px; width:100%; }
+  .warning-box { background:rgba(200,57,43,0.08); border:1px solid rgba(200,57,43,0.25); padding:16px 20px; margin-bottom:28px; }
+  .warning-box p { font-size:13px; color:rgba(240,237,232,0.6); line-height:1.6; }
+  .warning-box strong { color:#f0ede8; }
+  .stock-alert { background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.3); padding:12px 16px; margin-bottom:16px; }
+  .stock-alert p { font-size:13px; color:rgba(240,237,232,0.7); line-height:1.5; }
+  .stock-alert strong { color:#3498db; }
+  .card { background:#1a1a18; border:1px solid rgba(240,237,232,0.1); padding:36px; margin-bottom:20px; }
+  .form-group { margin-bottom:18px; }
+  label { display:block; font-size:11px; font-weight:600; letter-spacing:0.2em; text-transform:uppercase; color:#b0aca5; margin-bottom:8px; }
+  input[type=text], input[type=email], input[type=password], select, textarea {
+    width:100%; background:rgba(240,237,232,0.05); border:1px solid rgba(240,237,232,0.15);
+    color:#f0ede8; font-family:'Barlow',sans-serif; font-size:15px; padding:12px 16px; outline:none;
+    -webkit-appearance:none; transition:border-color 0.2s;
+  }
+  input:focus, select:focus, textarea:focus { border-color:rgba(240,237,232,0.4); }
+  input::placeholder, textarea::placeholder { color:rgba(240,237,232,0.25); }
+  select option { background:#1a1a18; }
+  textarea { resize:vertical; min-height:70px; }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .submit-btn { width:100%; font-family:'Barlow Condensed',sans-serif; font-size:14px; font-weight:800; letter-spacing:0.25em; text-transform:uppercase; background:#f0ede8; color:#0a0a0a; border:none; padding:18px; cursor:pointer; transition:opacity 0.2s; margin-top:8px; }
+  .submit-btn:hover { opacity:0.88; }
+  .submit-btn:disabled { opacity:0.35; cursor:not-allowed; }
+  #escuelas-result { margin-top:20px; padding:18px; border:1px solid rgba(240,237,232,0.1); font-size:14px; line-height:1.7; display:none; }
+  #escuelas-result.success { border-color:#2ecc71; color:#2ecc71; }
+  #escuelas-result.error { border-color:#e74c3c; color:#e74c3c; }
+  .codes-list { margin-top:10px; font-family:monospace; font-size:13px; background:rgba(0,0,0,0.3); padding:10px; }
+  .codes-list div { padding:3px 0; border-bottom:1px solid rgba(240,237,232,0.06); }
+  .codes-list div:last-child { border:none; }
+
+  .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:1px; background:rgba(240,237,232,0.08); border-bottom:1px solid rgba(240,237,232,0.08); }
+  .stat-card { background:#0a0a0a; padding:18px 16px; }
+  .stat-label { font-size:10px; letter-spacing:0.3em; text-transform:uppercase; color:#b0aca5; margin-bottom:6px; }
+  .stat-value { font-family:'Barlow Condensed',sans-serif; font-size:32px; font-weight:900; line-height:1; }
+  .stat-value.green { color:#2ecc71; }
+  .stat-value.orange { color:#f39c12; }
+  .stat-value.blue { color:#3498db; }
+  .stat-progress { margin-top:6px; background:rgba(240,237,232,0.08); height:3px; }
+  .stat-progress-bar { height:3px; background:#3498db; transition:width 0.3s; }
+
+  .filters { padding:14px 20px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; border-bottom:1px solid rgba(240,237,232,0.06); }
+  .search-input { background:rgba(240,237,232,0.05); border:1px solid rgba(240,237,232,0.15); color:#f0ede8; font-family:'Barlow',sans-serif; font-size:14px; padding:9px 14px; outline:none; flex:1; min-width:180px; }
+  .search-input::placeholder { color:rgba(240,237,232,0.3); }
+  .filter-btn { font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; background:transparent; border:1px solid rgba(240,237,232,0.15); color:#b0aca5; padding:7px 12px; cursor:pointer; transition:all 0.2s; }
+  .filter-btn:hover, .filter-btn.active { background:rgba(240,237,232,0.08); border-color:rgba(240,237,232,0.4); color:#f0ede8; }
+  .filter-btn.f-used.active { border-color:#2ecc71; color:#2ecc71; }
+  .filter-btn.f-pending.active { border-color:#f39c12; color:#f39c12; }
+  .dash-actions { padding:10px 20px; display:flex; gap:8px; border-bottom:1px solid rgba(240,237,232,0.06); flex-wrap:wrap; }
+  .btn-sm { font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; background:transparent; border:1px solid rgba(240,237,232,0.2); color:#f0ede8; padding:7px 14px; cursor:pointer; transition:all 0.2s; }
+  .btn-sm:hover { background:rgba(240,237,232,0.08); }
+  .btn-sm.danger { border-color:rgba(231,76,60,0.4); color:#e74c3c; }
+  .btn-sm.danger:hover { background:rgba(231,76,60,0.1); }
+
+  .selection-bar { display:none; padding:9px 20px; background:rgba(231,76,60,0.08); border-bottom:1px solid rgba(231,76,60,0.2); align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  .selection-bar.show { display:flex; }
+  .selection-info { font-size:13px; color:#e74c3c; }
+
+  .table-container { flex:1; overflow-x:auto; padding:0 20px 24px; }
+  table { width:100%; border-collapse:collapse; min-width:680px; margin-top:14px; }
+  thead th { font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:#b0aca5; padding:9px 10px; text-align:left; border-bottom:1px solid rgba(240,237,232,0.1); white-space:nowrap; }
+  tbody tr { border-bottom:1px solid rgba(240,237,232,0.04); transition:background 0.15s; }
+  tbody tr:hover { background:rgba(240,237,232,0.03); }
+  tbody tr.selected { background:rgba(231,76,60,0.05); }
+  tbody td { padding:10px; font-size:13px; color:#f0ede8; vertical-align:middle; }
+  tbody td.dim { color:#b0aca5; }
+  input[type=checkbox] { width:15px; height:15px; cursor:pointer; accent-color:#e74c3c; }
+  .badge { display:inline-block; font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; padding:2px 8px; }
+  .badge.used { background:rgba(46,204,113,0.12); color:#2ecc71; border:1px solid rgba(46,204,113,0.3); }
+  .badge.pending { background:rgba(243,156,18,0.12); color:#f39c12; border:1px solid rgba(243,156,18,0.3); }
+  .badge.general { background:rgba(240,237,232,0.06); color:#b0aca5; border:1px solid rgba(240,237,232,0.1); }
+  .badge.primera { background:rgba(52,152,219,0.1); color:#3498db; border:1px solid rgba(52,152,219,0.2); }
+  .badge.vip { background:rgba(155,89,182,0.1); color:#9b59b6; border:1px solid rgba(155,89,182,0.2); }
+  .code-mono { font-family:monospace; font-size:11px; color:rgba(240,237,232,0.4); }
+  .del-btn { background:transparent; border:1px solid rgba(231,76,60,0.3); color:#e74c3c; font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; padding:3px 8px; cursor:pointer; transition:all 0.2s; }
+  .del-btn:hover { background:rgba(231,76,60,0.15); }
+  .unval-btn { background:transparent; border:1px solid rgba(243,156,18,0.4); color:#f39c12; font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; padding:3px 8px; cursor:pointer; transition:all 0.2s; margin-right:4px; }
+  .unval-btn:hover { background:rgba(243,156,18,0.12); }
+
+  .loading-msg { text-align:center; padding:48px 20px; color:#b0aca5; font-size:13px; }
+  .empty-state { text-align:center; padding:48px 20px; color:#b0aca5; }
+
+  .scanner-wrap { display:flex; flex-direction:column; flex:1; }
+  .scan-counter { background:#111; padding:10px 20px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(240,237,232,0.08); }
+  .scan-counter-label { font-size:11px; letter-spacing:0.3em; text-transform:uppercase; color:#b0aca5; }
+  .scan-counter-val { font-family:'Barlow Condensed',sans-serif; font-size:24px; font-weight:900; }
+  #reader-container { position:relative; width:100%; max-width:500px; margin:0 auto; }
+  #reader { width:100% !important; }
+  #reader video { width:100% !important; object-fit:cover; }
+  .scan-overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; }
+  .scan-frame { width:200px; height:200px; position:relative; }
+  .scan-frame::before { content:''; position:absolute; top:0; left:0; width:36px; height:36px; border-top:3px solid #f0ede8; border-left:3px solid #f0ede8; }
+  .scan-frame::after { content:''; position:absolute; bottom:0; right:0; width:36px; height:36px; border-bottom:3px solid #f0ede8; border-right:3px solid #f0ede8; }
+  .corner-tr { position:absolute; top:0; right:0; width:36px; height:36px; border-top:3px solid #f0ede8; border-right:3px solid #f0ede8; }
+  .corner-bl { position:absolute; bottom:0; left:0; width:36px; height:36px; border-bottom:3px solid #f0ede8; border-left:3px solid #f0ede8; }
+  .scan-line { position:absolute; left:8px; right:8px; height:2px; background:linear-gradient(90deg,transparent,#f0ede8,transparent); animation:scanline 2s linear infinite; top:50%; }
+  @keyframes scanline { 0%,100%{transform:translateY(-90px);opacity:0;} 10%,90%{opacity:1;} 50%{transform:translateY(90px);} }
+  .manual-section { padding:14px 20px; border-top:1px solid rgba(240,237,232,0.08); }
+  .manual-section label { font-size:10px; letter-spacing:0.3em; text-transform:uppercase; color:#b0aca5; display:block; margin-bottom:8px; }
+  .manual-row { display:flex; gap:8px; }
+  .manual-row input { flex:1; background:rgba(240,237,232,0.05); border:1px solid rgba(240,237,232,0.15); color:#f0ede8; font-family:monospace; font-size:14px; padding:11px; outline:none; text-transform:uppercase; }
+  .manual-row input::placeholder { color:rgba(240,237,232,0.25); font-family:'Barlow',sans-serif; font-size:12px; text-transform:none; }
+  .manual-row button { font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; background:#f0ede8; color:#0a0a0a; border:none; padding:0 20px; cursor:pointer; }
+
+  .result-overlay { display:none; position:fixed; inset:0; z-index:200; align-items:center; justify-content:center; padding:20px; }
+  .result-overlay.show { display:flex; }
+  .valid-bg { background:rgba(0,18,0,0.96); }
+  .invalid-bg { background:rgba(18,0,0,0.96); }
+  .used-bg { background:rgba(18,10,0,0.96); }
+  .result-card { width:100%; max-width:340px; padding:32px; text-align:center; }
+  .result-icon { font-size:60px; margin-bottom:12px; }
+  .result-status { font-family:'Barlow Condensed',sans-serif; font-size:34px; font-weight:900; margin-bottom:8px; }
+  .result-status.ok { color:#2ecc71; }
+  .result-status.ko { color:#e74c3c; }
+  .result-status.warn { color:#f39c12; }
+  .ticket-info { background:rgba(240,237,232,0.05); border:1px solid rgba(240,237,232,0.1); padding:16px; margin:16px 0; text-align:left; }
+  .ticket-info-row { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid rgba(240,237,232,0.06); font-size:13px; }
+  .ticket-info-row:last-child { border:none; }
+  .ti-lbl { color:#b0aca5; }
+  .ti-val { color:#f0ede8; font-weight:500; text-align:right; max-width:60%; }
+  .result-code { font-family:monospace; font-size:11px; color:rgba(240,237,232,0.35); margin-bottom:16px; }
+  .used-time { font-size:12px; color:rgba(240,237,232,0.4); margin-bottom:14px; }
+  .close-result-btn { width:100%; font-family:'Barlow Condensed',sans-serif; font-size:14px; font-weight:800; letter-spacing:0.2em; text-transform:uppercase; border:none; padding:15px; cursor:pointer; }
+  .close-result-btn.ok { background:#2ecc71; color:#0a0a0a; }
+  .close-result-btn.ko { background:#e74c3c; color:#f0ede8; }
+  .close-result-btn.warn { background:#f39c12; color:#0a0a0a; }
+
+  .confirm-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:300; align-items:center; justify-content:center; padding:20px; }
+  .confirm-overlay.show { display:flex; }
+  .confirm-box { background:#1a1a18; border:1px solid rgba(240,237,232,0.15); padding:36px; max-width:380px; width:100%; text-align:center; }
+  .confirm-box h3 { font-family:'Barlow Condensed',sans-serif; font-size:22px; font-weight:900; margin-bottom:10px; color:#e74c3c; }
+  .confirm-box p { font-size:13px; color:#b0aca5; line-height:1.6; margin-bottom:24px; }
+  .confirm-actions { display:flex; gap:10px; }
+  .confirm-actions button { flex:1; font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:800; letter-spacing:0.15em; text-transform:uppercase; padding:13px; border:none; cursor:pointer; }
+  .confirm-cancel { background:transparent; border:1px solid rgba(240,237,232,0.2) !important; color:#f0ede8; }
+  .confirm-delete { background:#e74c3c; color:#f0ede8; }
+
+  @media (max-width:600px) {
+    .topbar { padding:0 16px; }
+    .nav-tab { padding:12px 16px; font-size:11px; }
+    .escuelas-wrap { padding:20px 16px; }
+    .card { padding:24px 18px; }
+    .row2 { grid-template-columns:1fr; }
+    .filters, .dash-actions { padding:12px 16px; }
+    .table-container { padding:0 16px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="login-screen">
+  <div class="logo-block">
+    <p class="eyebrow">Muay Thai Revolution</p>
+    <h1>MTR</h1>
+    <div class="sep"></div>
+    <h1>YIN</h1>
+    <p class="sub">Panel de Administración</p>
+  </div>
+  <input type="password" class="login-input" id="secret-input" placeholder="Clave de administración" autocomplete="off">
+  <button class="login-btn" onclick="doLogin()">Acceder</button>
+  <p id="login-error"></p>
+</div>
+
+<!-- APP -->
+<div class="app" id="app">
+
+  <div class="topbar">
+    <div style="display:flex;align-items:center;">
+      <span class="topbar-logo">MTR YIN · Admin</span>
+      <span class="readonly-badge" id="readonly-badge">Solo lectura</span>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-xs" onclick="logout()">Salir</button>
+    </div>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="nav-tab" id="tab-escuelas" onclick="showSection('escuelas', event)">🎟 Escuelas</button>
+    <button class="nav-tab active" id="tab-dashboard" onclick="showSection('dashboard', event)">📊 Entradas</button>
+    <button class="nav-tab" id="tab-scanner" onclick="showSection('scanner', event)">📷 Lector QR</button>
+    <button class="nav-tab" id="tab-descuentos" onclick="showSection('descuentos', event)">🏷 Descuentos</button>
+  </div>
+
+  <!-- ══ ESCUELAS ══ -->
+  <div class="section" id="section-escuelas">
+    <div class="escuelas-wrap">
+      <div class="warning-box">
+        <p><strong>Uso exclusivo para escuelas participantes.</strong><br>
+        Las entradas generadas incluyen QR, número y PVP. Se envían por email en formato PDF.</p>
+      </div>
+      <div class="stock-alert" id="stock-alert-escuelas" style="display:none;">
+        <p>⚠️ <strong>Primera Fila:</strong> quedan <strong id="stock-restantes-esc">—</strong> de 40 entradas disponibles.</p>
+      </div>
+      <div class="card">
+        <div class="row2">
+          <div class="form-group">
+            <label>Nombre del destinatario</label>
+            <input type="text" id="esc-name" placeholder="Elena García">
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="esc-email" placeholder="elena@gimnasio.com">
+          </div>
+        </div>
+        <div class="row2">
+          <div class="form-group">
+            <label>Tipo de acceso</label>
+            <select id="esc-type" onchange="checkStockWarning()">
+              <option value="general">General — 35€</option>
+              <option value="primera_fila">Primera Fila — 50€</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Cantidad</label>
+            <select id="esc-qty">
+              <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+              <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+              <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+              <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+              <option value="13">13</option><option value="14">14</option><option value="15">15</option>
+              <option value="16">16</option><option value="17">17</option><option value="18">18</option>
+              <option value="19">19</option><option value="20">20</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Escuela / Gimnasio</label>
+          <input type="text" id="esc-school" placeholder="Gym Muay Thai Madrid">
+        </div>
+        <div class="form-group">
+          <label>Nota interna (opcional)</label>
+          <textarea id="esc-note" placeholder="Ej: Entradas para equipo técnico..."></textarea>
+        </div>
+        <button class="submit-btn" id="esc-btn" onclick="sendFreeTickets()">Generar y enviar entradas PDF</button>
+      </div>
+      <div id="escuelas-result"></div>
+    </div>
+  </div>
+
+  <!-- ══ DASHBOARD ══ -->
+  <div class="section active" id="section-dashboard">
+    <div class="stats-grid">
+      <div class="stat-card"><p class="stat-label">Total entradas</p><p class="stat-value" id="stat-total">—</p></div>
+      <div class="stat-card"><p class="stat-label">Validadas</p><p class="stat-value green" id="stat-used">—</p></div>
+      <div class="stat-card"><p class="stat-label">Pendientes</p><p class="stat-value orange" id="stat-pending">—</p></div>
+      <div class="stat-card"><p class="stat-label">Total recaudado</p><p class="stat-value green" id="stat-recaudado">—</p></div>
+      <div class="stat-card"><p class="stat-label">General (und.)</p><p class="stat-value" id="stat-general">—</p><p style="font-size:11px;color:#b0aca5;margin-top:4px;" id="stat-ing-general">—</p></div>
+      <div class="stat-card">
+        <p class="stat-label">1ª Fila <span style="color:#3498db;font-size:9px;">/ 40</span></p>
+        <p class="stat-value blue" id="stat-primera">—</p>
+        <p style="font-size:11px;color:#b0aca5;margin-top:4px;" id="stat-ing-primera">—</p>
+        <div class="stat-progress"><div class="stat-progress-bar" id="pf-progress-bar" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="filters">
+      <input type="text" class="search-input" id="search-input" placeholder="Buscar nombre, email, código, #0001, escuela..." oninput="filterTickets()">
+      <button class="filter-btn active" id="filter-all" onclick="setFilter('all')">Todas</button>
+      <button class="filter-btn f-used" id="filter-used" onclick="setFilter('used')">Validadas</button>
+      <button class="filter-btn f-pending" id="filter-pending" onclick="setFilter('pending')">Pendientes</button>
+    </div>
+    <div class="dash-actions">
+      <button class="btn-sm" onclick="loadTickets()">↻ Actualizar</button>
+      <button class="btn-sm" onclick="exportCSV()">Exportar CSV</button>
+      <button class="btn-sm danger admin-only" id="btn-delete-selected" onclick="confirmDeleteSelected()" style="display:none;">🗑 Eliminar selección</button>
+    </div>
+    <div class="selection-bar admin-only" id="selection-bar">
+      <span class="selection-info" id="selection-info">0 seleccionadas</span>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-sm" onclick="deselectAll()">Cancelar</button>
+        <button class="btn-sm danger" onclick="confirmDeleteSelected()">🗑 Eliminar</button>
+      </div>
+    </div>
+    <div class="table-container">
+      <div class="loading-msg" id="dash-loading">Cargando...</div>
+      <table id="tickets-table" style="display:none;">
+        <thead>
+          <tr>
+            <th class="admin-only"><input type="checkbox" id="select-all" onchange="toggleSelectAll()"></th>
+            <th>#</th><th>Estado</th><th>Nombre</th><th>Email</th>
+            <th>Tipo</th><th>Nº</th><th>Escuela</th><th>Promo</th><th>Validada</th><th>Código</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tickets-body"></tbody>
+      </table>
+      <div class="empty-state" id="empty-state" style="display:none;"><p>No hay entradas que coincidan</p></div>
+    </div>
+  </div>
+
+  <!-- ══ SCANNER ══ -->
+  <div class="section" id="section-scanner">
+    <div class="scanner-wrap">
+      <div class="scan-counter">
+        <span class="scan-counter-label">Validadas hoy</span>
+        <span class="scan-counter-val" id="scan-count">0</span>
+      </div>
+      <div id="reader-container">
+        <div id="reader"></div>
+        <div class="scan-overlay">
+          <div class="scan-frame">
+            <div class="corner-tr"></div>
+            <div class="corner-bl"></div>
+            <div class="scan-line"></div>
+          </div>
+        </div>
+      </div>
+      <div class="manual-section">
+        <label>O introduce el código manualmente</label>
+        <div class="manual-row">
+          <input type="text" id="manual-code" placeholder="MTRYIN-XXXX-XXXX-XXXX">
+          <button onclick="validateManual()">Validar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ DESCUENTOS ══ -->
+  <div class="section" id="section-descuentos">
+    <div class="escuelas-wrap">
+      <div class="card">
+        <h2 style="font-family:Barlow Condensed,sans-serif;font-size:22px;font-weight:900;margin-bottom:24px;">Códigos de descuento activos</h2>
+        <div id="disc-list" style="margin-bottom:28px;"></div>
+        <div style="border-top:1px solid rgba(240,237,232,0.1);padding-top:24px;">
+          <p style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#b0aca5;margin-bottom:16px;">Añadir nuevo código</p>
+          <div class="row2" style="margin-bottom:12px;">
+            <div class="form-group">
+              <label>Código</label>
+              <input type="text" id="disc-code" placeholder="PROMO2026" style="text-transform:uppercase;">
+            </div>
+            <div class="form-group">
+              <label>Descuento %</label>
+              <input type="number" id="disc-pct" placeholder="0" min="0" max="100">
+            </div>
+          </div>
+          <button class="submit-btn" onclick="addDiscount()">Añadir código</button>
+        </div>
+      </div>
+      <div id="disc-result" style="display:none;margin-top:16px;padding:16px;border:1px solid;font-size:14px;"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- RESULT OVERLAY -->
+<div class="result-overlay" id="result-overlay">
+  <div class="result-card">
+    <div class="result-icon" id="result-icon">✓</div>
+    <div class="result-status" id="result-status">VÁLIDA</div>
+    <div class="result-code" id="result-code"></div>
+    <div class="ticket-info" id="ticket-info"></div>
+    <div class="used-time" id="used-time"></div>
+    <button class="close-result-btn" id="close-result-btn" onclick="closeResult()">Siguiente entrada</button>
+  </div>
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <h3>¿Eliminar?</h3>
+    <p id="confirm-text">Esta acción no se puede deshacer.</p>
+    <div class="confirm-actions">
+      <button class="confirm-cancel" onclick="closeConfirm()">Cancelar</button>
+      <button class="confirm-delete" onclick="executeDelete()">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const PRIMERA_FILA_TOTAL = 40;
+
+  let adminSecret = '';
+  let isReadonly  = false;
+  let allTickets  = [];
+  let filteredTickets = [];
+  let currentFilter = 'all';
+  let pendingDeleteCodes = [];
+  let scanCount = 0;
+  let isProcessing = false;
+  let qrScanner = null;
+  let scannerStarted = false;
+
+  // ── LOGIN ──
+  function doLogin() {
+    const val = document.getElementById('secret-input').value.trim();
+    if (!val) { document.getElementById('login-error').textContent = 'Introduce la clave.'; return; }
+    adminSecret = val;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    // Detectar si es readonly haciendo una llamada de prueba — el backend distinguirá
+    // Intentamos cargar entradas; si falla con 401 no es ninguna clave válida
+    // Si la clave es readonly, el backend la acepta para list pero no para delete
+    // Para detectarlo en el frontend, usamos un endpoint especial o convenio de prefijo
+    // Convenio: si la clave empieza por "RO_" o es la hardcodeada, modo readonly
+    // Mejor: pedimos al backend que nos diga el rol
+    checkRole();
+  }
+
+  async function checkRole() {
+    try {
+      const res = await fetch('/.netlify/functions/validate-ticket?action=list', {
+        headers: { 'x-admin-secret': adminSecret },
+      });
+      if (res.status === 401) {
+        adminSecret = '';
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('app').style.display = 'none';
+        document.getElementById('login-error').textContent = 'Clave incorrecta.';
+        document.getElementById('secret-input').value = '';
+        return;
+      }
+      const data = await res.json();
+      // El backend devuelve readonly:true si la clave es la de solo lectura
+      isReadonly = data.readonly === true;
+      applyMode();
+      allTickets = data.tickets || [];
+      renderStats();
+      filterTickets();
+    } catch(e) {
+      document.getElementById('login-error').textContent = 'Error de conexión.';
+    }
+  }
+
+  function applyMode() {
+    if (isReadonly) {
+      document.getElementById('readonly-badge').style.display = 'inline-block';
+      // Ocultar pestañas restringidas
+      document.getElementById('tab-escuelas').classList.add('hidden');
+      document.getElementById('tab-descuentos').classList.add('hidden');
+      // Ocultar elementos destructivos
+      document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+    }
+  }
+
+  document.getElementById('secret-input').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+  function logout() {
+    adminSecret = ''; isReadonly = false;
+    if (qrScanner) { try { qrScanner.stop(); } catch(e){} qrScanner = null; scannerStarted = false; }
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('secret-input').value = '';
+    document.getElementById('login-error').textContent = '';
+  }
+
+  // ── NAV ──
+  function showSection(name, event) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('section-' + name).classList.add('active');
+    if (event) event.target.classList.add('active');
+    if (name === 'scanner' && !scannerStarted) initScanner();
+    if (name === 'descuentos') renderDiscounts();
+    if (name === 'dashboard') loadTickets();
+    if (name === 'escuelas') checkStockWarning();
+  }
+
+  function checkStockWarning() {
+    const type = document.getElementById('esc-type').value;
+    document.getElementById('stock-alert-escuelas').style.display = type === 'primera_fila' ? 'block' : 'none';
+  }
+
+  // ── ESCUELAS ──
+  async function sendFreeTickets() {
+    const name   = document.getElementById('esc-name').value.trim();
+    const email  = document.getElementById('esc-email').value.trim();
+    const type   = document.getElementById('esc-type').value;
+    const qty    = document.getElementById('esc-qty').value;
+    const school = document.getElementById('esc-school').value.trim();
+    const note   = document.getElementById('esc-note').value.trim();
+    const btn    = document.getElementById('esc-btn');
+
+    if (!email || !email.includes('@')) { showEscResult('Email inválido.', 'error'); return; }
+    if (!name) { showEscResult('Introduce el nombre.', 'error'); return; }
+    btn.disabled = true; btn.textContent = 'Generando PDFs...';
+    try {
+      const res = await fetch('/.netlify/functions/generate-free-ticket', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-secret': adminSecret },
+        body: JSON.stringify({ email, name, ticketType: type, qty: parseInt(qty), school, note }),
+      });
+      const data = await res.json();
+      if (!res.ok) { showEscResult('Error: ' + (data.error || 'Error desconocido'), 'error'); }
+      else {
+        const codesHtml = data.codes ? '<div class="codes-list">' + data.codes.map(c => `<div>${c}</div>`).join('') + '</div>' : '';
+        showEscResult(`✓ ${data.message}<br><br>Códigos:${codesHtml}`, 'success');
+        ['esc-name','esc-email','esc-school','esc-note'].forEach(id => document.getElementById(id).value = '');
+      }
+    } catch (err) { showEscResult('Error de conexión: ' + err.message, 'error'); }
+    btn.disabled = false; btn.textContent = 'Generar y enviar entradas PDF';
+  }
+
+  function showEscResult(html, type) {
+    const r = document.getElementById('escuelas-result');
+    r.innerHTML = html; r.className = type; r.style.display = 'block';
+    r.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+
+  // ── DASHBOARD ──
+  async function loadTickets() {
+    document.getElementById('dash-loading').style.display = 'block';
+    document.getElementById('tickets-table').style.display = 'none';
+    document.getElementById('empty-state').style.display = 'none';
+    try {
+      const res = await fetch('/.netlify/functions/validate-ticket?action=list', {
+        headers: { 'x-admin-secret': adminSecret },
+      });
+      if (res.status === 401) { logout(); return; }
+      const data = await res.json();
+      allTickets = data.tickets || [];
+      renderStats();
+      filterTickets();
+    } catch (err) {
+      document.getElementById('dash-loading').textContent = 'Error de conexión.';
+    }
+  }
+
+  function renderStats() {
+    const total   = allTickets.length;
+    const used    = allTickets.filter(t => t.used).length;
+    const general = allTickets.filter(t => t.ticket_type === 'general');
+    const primera = allTickets.filter(t => t.ticket_type === 'primera_fila');
+    const recaudado = allTickets.reduce((s, t) => s + (t.pvp || 0), 0);
+    document.getElementById('stat-total').textContent    = total;
+    document.getElementById('stat-used').textContent     = used;
+    document.getElementById('stat-pending').textContent  = total - used;
+    document.getElementById('stat-general').textContent  = general.length;
+    document.getElementById('stat-primera').textContent  = primera.length;
+    document.getElementById('stat-recaudado').textContent = recaudado + '€';
+    document.getElementById('stat-ing-general').textContent = general.reduce((s,t) => s+(t.pvp||0),0) + '€';
+    document.getElementById('stat-ing-primera').textContent = primera.reduce((s,t) => s+(t.pvp||0),0) + '€';
+    const pfPct = Math.min(100, Math.round((primera.length / PRIMERA_FILA_TOTAL) * 100));
+    const bar = document.getElementById('pf-progress-bar');
+    bar.style.width = pfPct + '%';
+    bar.style.background = pfPct >= 90 ? '#e74c3c' : pfPct >= 70 ? '#f39c12' : '#3498db';
+    const stockEl = document.getElementById('stock-restantes-esc');
+    if (stockEl) stockEl.textContent = Math.max(0, PRIMERA_FILA_TOTAL - primera.length);
+  }
+
+  function setFilter(f) {
+    currentFilter = f;
+    ['all','used','pending'].forEach(x => document.getElementById('filter-' + x).classList.toggle('active', x === f));
+    filterTickets();
+  }
+
+  function filterTickets() {
+    const search = document.getElementById('search-input').value.toLowerCase();
+    let filtered = allTickets;
+    if (currentFilter === 'used')    filtered = filtered.filter(t => t.used);
+    if (currentFilter === 'pending') filtered = filtered.filter(t => !t.used);
+    if (search) {
+      filtered = filtered.filter(t =>
+        (t.buyer_name||'').toLowerCase().includes(search) ||
+        (t.buyer_email||'').toLowerCase().includes(search) ||
+        (t.code||'').toLowerCase().includes(search) ||
+        (t.school||'').toLowerCase().includes(search) ||
+        (t.entry_number ? '#' + String(t.entry_number).padStart(4,'0') : '').includes(search)
+      );
+    }
+    filteredTickets = filtered;
+    renderTable(filtered);
+    updateSelectionBar();
+  }
+
+  function renderTable(tickets) {
+    document.getElementById('dash-loading').style.display = 'none';
+    if (!document.getElementById('select-all').style.display !== 'none')
+      document.getElementById('select-all').checked = false;
+
+    if (!tickets.length) {
+      document.getElementById('tickets-table').style.display = 'none';
+      document.getElementById('empty-state').style.display = 'block';
+      return;
+    }
+    document.getElementById('empty-state').style.display = 'none';
+    document.getElementById('tickets-table').style.display = 'table';
+    const tbody = document.getElementById('tickets-body');
+    tbody.innerHTML = tickets.map((t, i) => {
+      const tb = t.ticket_type === 'primera_fila' ? 'primera' : t.ticket_type === 'vip_cena' ? 'vip' : 'general';
+      const tl = t.ticket_type === 'primera_fila' ? 'Primera Fila' : t.ticket_type === 'vip_cena' ? 'VIP+Cena' : 'General';
+      const ua = t.used_at ? new Date(t.used_at).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+      const en = t.entry_number ? '#' + String(t.entry_number).padStart(4,'0') : '—';
+      const safeName = (t.buyer_name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      const safeCode = t.code;
+
+      // Botón desvalidar: solo si está usada
+      const unvalBtn = t.used
+        ? `<button class="unval-btn" onclick="unvalidateTicket('${safeCode}','${safeName}')">Desvalidar</button>`
+        : '';
+      // Botón borrar: solo en modo admin
+      const delBtn = !isReadonly
+        ? `<button class="del-btn" onclick="confirmDeleteOne('${safeCode}','${safeName}')">Borrar</button>`
+        : '';
+      // Checkbox: solo en modo admin
+      const checkbox = !isReadonly
+        ? `<input type="checkbox" class="row-check" data-code="${safeCode}" onchange="updateSelectionBar()">`
+        : '';
+
+      return `<tr id="row-${safeCode}">
+        <td>${checkbox}</td>
+        <td class="dim">${i+1}</td>
+        <td><span class="badge ${t.used?'used':'pending'}">${t.used?'Validada':'Pendiente'}</span></td>
+        <td>${t.buyer_name||'—'}</td>
+        <td class="dim">${t.buyer_email||'—'}</td>
+        <td><span class="badge ${tb}">${tl}</span></td>
+        <td class="dim">${en}</td>
+        <td class="dim">${t.school||'—'}</td>
+        <td class="dim" style="color:${t.promo_code?'#f39c12':'#b0aca5'}">${t.promo_code||'—'}</td>
+        <td class="dim">${ua}</td>
+        <td class="code-mono">${safeCode}</td>
+        <td style="white-space:nowrap;">${unvalBtn}${delBtn}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── DESVALIDAR ──
+  async function unvalidateTicket(code, name) {
+    if (!confirm('¿Desvalidar la entrada de "' + (name || code) + '"?\nVolverá a estado Pendiente.')) return;
+    try {
+      const res = await fetch('/.netlify/functions/validate-ticket', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-secret': adminSecret },
+        body: JSON.stringify({ action: 'unvalidate', code }),
+      });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        await loadTickets();
+      } else {
+        alert('Error: ' + (data.error || 'desconocido'));
+      }
+    } catch(e) { alert('Error de conexión.'); }
+  }
+
+  function toggleSelectAll() {
+    const checked = document.getElementById('select-all').checked;
+    document.querySelectorAll('.row-check').forEach(cb => {
+      cb.checked = checked;
+      document.getElementById('row-' + cb.dataset.code)?.classList.toggle('selected', checked);
+    });
+    updateSelectionBar();
+  }
+
+  function updateSelectionBar() {
+    document.querySelectorAll('.row-check').forEach(cb =>
+      document.getElementById('row-' + cb.dataset.code)?.classList.toggle('selected', cb.checked));
+    const n = document.querySelectorAll('.row-check:checked').length;
+    const bar = document.getElementById('selection-bar');
+    if (!isReadonly) bar.classList.toggle('show', n > 0);
+    if (n > 0) document.getElementById('selection-info').textContent = n + ' entrada' + (n>1?'s':'') + ' seleccionada' + (n>1?'s':'');
+  }
+
+  function deselectAll() {
+    document.querySelectorAll('.row-check').forEach(cb => { cb.checked = false; });
+    document.getElementById('select-all').checked = false;
+    updateSelectionBar();
+  }
+
+  function confirmDeleteOne(code, name) {
+    pendingDeleteCodes = [code];
+    document.getElementById('confirm-text').textContent = 'Se eliminará la entrada de "' + (name||code) + '". Esta acción no se puede deshacer.';
+    document.getElementById('confirm-overlay').classList.add('show');
+  }
+
+  function confirmDeleteSelected() {
+    const sel = [...document.querySelectorAll('.row-check:checked')].map(cb => cb.dataset.code);
+    if (!sel.length) return;
+    pendingDeleteCodes = sel;
+    document.getElementById('confirm-text').textContent = 'Se eliminarán ' + sel.length + ' entrada' + (sel.length>1?'s':'') + '. Esta acción no se puede deshacer.';
+    document.getElementById('confirm-overlay').classList.add('show');
+  }
+
+  function closeConfirm() { document.getElementById('confirm-overlay').classList.remove('show'); pendingDeleteCodes = []; }
+
+  async function executeDelete() {
+    const codes = [...pendingDeleteCodes];
+    closeConfirm();
+    for (const code of codes) {
+      try {
+        await fetch('/.netlify/functions/validate-ticket', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-secret': adminSecret },
+          body: JSON.stringify({ action: 'delete', code }),
+        });
+      } catch(e) { console.warn('Error borrando', code, e); }
+    }
+    await loadTickets();
+  }
+
+  function exportCSV() {
+    if (!allTickets.length) return;
+    const headers = ['Código','Nombre','Email','Tipo','Entrada','Escuela','Código Promo','PVP','Estado','Validada'];
+    const rows = allTickets.map(t => [
+      t.code, t.buyer_name||'', t.buyer_email||'', t.ticket_name||t.ticket_type,
+      t.entry_number ? '#' + String(t.entry_number).padStart(4,'0') : '',
+      t.school||'', t.promo_code||'', t.pvp ? t.pvp + '€' : '',
+      t.used ? 'Validada' : 'Pendiente',
+      t.used_at ? new Date(t.used_at).toLocaleString('es-ES') : '',
+    ]);
+    const csv = [headers,...rows].map(r => r.map(v => '"' + v + '"').join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+    a.download = 'mtryin-entradas-' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+  }
+
+  // ── SCANNER ──
+  function initScanner() {
+    scannerStarted = true;
+    qrScanner = new Html5Qrcode('reader');
+    qrScanner.start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: { width: 200, height: 200 } },
+      (decoded) => { if (!isProcessing) validateCode(decoded.trim().toUpperCase()); },
+      () => {}
+    ).catch(err => console.warn('Camera error:', err));
+  }
+
+  function validateManual() {
+    const code = document.getElementById('manual-code').value.trim().toUpperCase();
+    if (!code) return;
+    validateCode(code);
+    document.getElementById('manual-code').value = '';
+  }
+  document.getElementById('manual-code').addEventListener('keydown', e => { if (e.key === 'Enter') validateManual(); });
+
+  async function validateCode(code) {
+    if (isProcessing) return;
+    isProcessing = true;
+    try {
+      const res = await fetch('/.netlify/functions/validate-ticket', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-secret': adminSecret },
+        body: JSON.stringify({ action: 'validate', code }),
+      });
+      const data = await res.json();
+      if (res.status === 401) { showScanResult('invalid', null, code, 'Clave incorrecta'); return; }
+      if (res.status === 404 || (!data.valid && !data.already_used)) { showScanResult('invalid', null, code, 'Entrada no encontrada'); return; }
+      if (data.already_used) { showScanResult('used', data.ticket, code, null, data.used_at); return; }
+      if (data.valid) { scanCount++; document.getElementById('scan-count').textContent = scanCount; showScanResult('valid', data.ticket, code); }
+    } catch (err) { showScanResult('invalid', null, code, 'Error de conexión'); }
+  }
+
+  function showScanResult(type, ticket, code, errorMsg, usedAt) {
+    const overlay = document.getElementById('result-overlay');
+    document.getElementById('result-code').textContent = code;
+    document.getElementById('used-time').textContent = '';
+    document.getElementById('ticket-info').innerHTML = '';
+    if (type === 'valid') {
+      overlay.className = 'result-overlay show valid-bg';
+      document.getElementById('result-icon').textContent = '✓';
+      document.getElementById('result-status').textContent = 'ENTRADA VÁLIDA';
+      document.getElementById('result-status').className = 'result-status ok';
+      document.getElementById('close-result-btn').className = 'close-result-btn ok';
+      if (ticket) document.getElementById('ticket-info').innerHTML = buildTicketInfoHTML(ticket);
+    } else if (type === 'used') {
+      overlay.className = 'result-overlay show used-bg';
+      document.getElementById('result-icon').textContent = '⚠';
+      document.getElementById('result-status').textContent = 'YA USADA';
+      document.getElementById('result-status').className = 'result-status warn';
+      document.getElementById('close-result-btn').className = 'close-result-btn warn';
+      if (ticket) document.getElementById('ticket-info').innerHTML = buildTicketInfoHTML(ticket);
+      if (usedAt) document.getElementById('used-time').textContent = 'Usada el ' + new Date(usedAt).toLocaleString('es-ES');
+    } else {
+      overlay.className = 'result-overlay show invalid-bg';
+      document.getElementById('result-icon').textContent = '✗';
+      document.getElementById('result-status').textContent = errorMsg || 'NO VÁLIDA';
+      document.getElementById('result-status').className = 'result-status ko';
+      document.getElementById('close-result-btn').className = 'close-result-btn ko';
+    }
+    overlay.style.display = 'flex';
+  }
+
+  function buildTicketInfoHTML(t) {
+    return [
+      ['Nombre', t.buyer_name||'—'],
+      ['Acceso', t.ticket_name||t.ticket_type],
+      ['Entrada', t.entry_number ? '#' + String(t.entry_number).padStart(4,'0') + ' de ' + t.total_entries : '—'],
+      ['Escuela', t.school||'—'],
+    ].map(([l,v]) => '<div class="ticket-info-row"><span class="ti-lbl">' + l + '</span><span class="ti-val">' + v + '</span></div>').join('');
+  }
+
+  function closeResult() {
+    document.getElementById('result-overlay').style.display = 'none';
+    document.getElementById('result-overlay').className = 'result-overlay';
+    setTimeout(() => { isProcessing = false; }, 800);
+  }
+
+  setInterval(() => {
+    if (adminSecret && document.getElementById('section-dashboard').classList.contains('active')) loadTickets();
+  }, 30000);
+
+  // ── DESCUENTOS ──
+  async function renderDiscounts() {
+    const el = document.getElementById('disc-list');
+    el.innerHTML = '<p style="color:#b0aca5;font-size:13px;">Cargando...</p>';
+    try {
+      const res = await fetch('/.netlify/functions/manage-discounts', { headers: { 'x-admin-secret': adminSecret } });
+      const data = await res.json();
+      const d = data.discounts || {};
+      const keys = Object.keys(d);
+      if (!keys.length) { el.innerHTML = '<p style="color:#b0aca5;font-size:13px;">No hay códigos activos.</p>'; return; }
+      el.innerHTML = '<table style="width:100%;border-collapse:collapse;"><thead><tr>' +
+        '<th style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#b0aca5;padding:8px 10px;text-align:left;border-bottom:1px solid rgba(240,237,232,0.1);">Código</th>' +
+        '<th style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#b0aca5;padding:8px 10px;text-align:left;border-bottom:1px solid rgba(240,237,232,0.1);">Descuento</th>' +
+        '<th style="border-bottom:1px solid rgba(240,237,232,0.1);"></th>' +
+        '</tr></thead><tbody>' +
+        keys.map(k => '<tr style="border-bottom:1px solid rgba(240,237,232,0.04);">' +
+          '<td style="padding:10px;font-family:monospace;font-size:14px;color:#f0ede8;">' + k + '</td>' +
+          '<td style="padding:10px;font-size:14px;color:' + (d[k]===100?'#e74c3c':d[k]>=50?'#f39c12':'#2ecc71') + ';">' + (d[k]===100?'Gratis (100%)':d[k]+'% descuento') + '</td>' +
+          '<td style="padding:10px;text-align:right;"><button class="del-btn" onclick="deleteDiscount(\'' + k + '\')">Borrar</button></td>' +
+        '</tr>').join('') + '</tbody></table>';
+    } catch(e) { el.innerHTML = '<p style="color:#e74c3c;font-size:13px;">Error cargando códigos.</p>'; }
+  }
+
+  async function addDiscount() {
+    const code = document.getElementById('disc-code').value.trim().toUpperCase();
+    const pct  = parseInt(document.getElementById('disc-pct').value);
+    if (!code) { showDiscResult('Introduce un código.', 'error'); return; }
+    if (isNaN(pct) || pct < 0 || pct > 100) { showDiscResult('El descuento debe ser entre 0 y 100.', 'error'); return; }
+    try {
+      const res = await fetch('/.netlify/functions/manage-discounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-secret': adminSecret },
+        body: JSON.stringify({ action: 'add', code, pct }),
+      });
+      const data = await res.json();
+      if (!res.ok) { showDiscResult('Error: ' + (data.error||'desconocido'), 'error'); return; }
+      document.getElementById('disc-code').value = '';
+      document.getElementById('disc-pct').value  = '';
+      renderDiscounts();
+      showDiscResult('✓ Código "' + code + '" añadido con ' + pct + '% de descuento.', 'success');
+    } catch(e) { showDiscResult('Error de conexión.', 'error'); }
+  }
+
+  async function deleteDiscount(code) {
+    if (!confirm('¿Eliminar el código "' + code + '"?')) return;
+    try {
+      await fetch('/.netlify/functions/manage-discounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-secret': adminSecret },
+        body: JSON.stringify({ action: 'delete', code }),
+      });
+      renderDiscounts();
+      showDiscResult('Código "' + code + '" eliminado.', 'success');
+    } catch(e) { showDiscResult('Error de conexión.', 'error'); }
+  }
+
+  function showDiscResult(msg, type) {
+    const el = document.getElementById('disc-result');
+    el.textContent = msg; el.style.display = 'block';
+    el.style.borderColor = type === 'success' ? '#2ecc71' : '#e74c3c';
+    el.style.color        = type === 'success' ? '#2ecc71' : '#e74c3c';
+    setTimeout(() => { el.style.display = 'none'; }, 3000);
+  }
+</script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</body>
+</html>
